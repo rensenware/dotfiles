@@ -1,0 +1,45 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                           ;
+;       BASE SETTINGS       ;
+;                           ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+[bar/bar]
+include-file = /home/rensenware/.config/polybar/base/bar
+
+[colors]
+include-file = /home/rensenware/.config/polybar/base/colors
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                           ;
+;          MODULES          ;
+;                           ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+[module/rofi]
+include-file = /home/rensenware/.config/polybar/modules/rofi
+
+[module/dwm]
+include-file = /home/rensenware/.config/polybar/modules/dwm
+
+[module/xtitle]
+include-file = /home/rensenware/.config/polybar/modules/xtitle
+
+[module/network]
+include-file = /home/rensenware/.config/polybar/modules/network
+
+[module/separator]
+include-file = /home/rensenware/.config/polybar/modules/separator
+
+[module/audio]
+include-file = /home/rensenware/.config/polybar/modules/audio
+
+[module/battery-combined-udev]
+include-file = /home/rensenware/.config/polybar/modules/battery-combined-udev
+
+[module/keylayout]
+include-file = /home/rensenware/.config/polybar/modules/keylayout
+
+[module/date]
+include-file = /home/rensenware/.config/polybar/modules/date
+
