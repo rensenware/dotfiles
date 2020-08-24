@@ -1,0 +1,6 @@
+[module/rofi]
+type = custom/text
+content-font = 2
+content = "%{T2} %{T5}%{T2}  "
+click-left = /home/rensenware/.config/scripts/rofi-menu-launch.sh
+click-right = /home/rensenware/.config/scripts/emoji.sh

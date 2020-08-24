@@ -1,0 +1,9 @@
+[module/battery-combined-udev]
+type = custom/script
+exec = /home/rensenware/.config/scripts/battery-combined-udev.sh
+tail = true
+format = <label>
+label = "%output%"
+label-foreground = ${colors.fg1}
+;label-foreground = #b5FF95
+label-font = 5

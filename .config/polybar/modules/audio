@@ -1,0 +1,21 @@
+[module/audio]
+type = internal/pulseaudio
+interval = 5
+
+format-muted = "<label-muted>"
+format-volume = "<label-volume>"
+format-volume-padding = 0
+format-volume-foreground = ${colors.fg1}
+;format-volume-foreground = #73C4FF
+
+label-volume-padding-right = 0
+label-volume = "%{T7}%{T2} %{T1}%percentage:02%%"
+label-volume-padding = 0
+label-volume-font = 
+
+label-muted = "%{T7}%{T2} %{T1}00%"
+label-muted-foreground = ${colors.fg1}
+;label-muted-foreground = #73C4FF
+
+scroll-up = pamixer -d 10
+scroll-down = pamixer -i 10

@@ -1,0 +1,11 @@
+[module/keylayout]
+type = custom/script
+exec = /home/rensenware/.config/scripts/layout.sh
+tail = true
+
+click-left = /home/rensenware/.config/scripts/keylayout.sh; /home/rensenware/.config/scripts/layout.sh --update;
+
+format = <label>
+label = "%{T5}%{T2} %{T1}%output%"
+format-foreground = ${colors.fg1}
+;format-foreground = #fff3af

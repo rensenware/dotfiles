@@ -1,0 +1,14 @@
+[module/network]
+type = internal/network
+interface = wlp3s0
+interval = 3
+
+format-connected = <label-connected>
+format-disconnected = <label-disconnected>
+;format-connected-foreground = #be6f91
+format-connected-foreground = ${colors.fg1}
+;format-disconnected-foreground = #be6f91
+format-disconnected-foreground = ${colors.fg1}
+
+label-connected = "%{A1:/home/rensenware/.config/scripts/dmenu-network.sh:}%{T8}%{T2} %{T1}%essid%%{A}"
+label-disconnected = %{A1:/home/rensenware/.config/scripts/dmenu-network.sh:}Not connected%{A}

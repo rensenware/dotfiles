@@ -1,0 +1,43 @@
+[module/dwm]
+type = internal/dwm
+format = <label-tags> <label-layout>
+
+enable-tags-click = true
+enable-layout-click = false
+enable-layout-scroll = false
+layout-scroll-wrap = false
+layout-scroll-reverse = false
+
+secondary-layout-symbol = [M]
+
+label-layout = " %{T4}%symbol%"
+label-layout-padding = 0
+label-layout-foreground = ${colors.fg2}
+label-layout-background = ${colors.bg1}
+label-floating = F
+
+label-focused = "  %{T7}%{T1}  "
+;label-focused-background = ${colors.bg2}
+;label-focused-foreground = ${colors.fg2}
+label-focused-foreground = #15a898
+label-focused-padding = 0
+
+label-unfocused = "  %{T6}%{T1}  "
+;label-unfocused-background = ${colors.bg1} 
+label-unfocused-foreground = #be6f91
+label-unfocused-padding = 0
+
+label-visible = "  %{T6}%{T1}  "
+label-visible-foreground = #15a898
+;label-visible-foreground = #be6f91
+label-visible-padding = 0
+
+label-urgent = "  %{T7}%{T1}  "
+label-urgent-foreground = #be6f91
+label-urgent-padding = 0
+
+label-empty = "  %{T6}%{T1}  "
+;label-empty-background = ${colors.bg1}
+label-empty-foreground = ${colors.fg2}
+;label-empty-foreground = #666666
+label-empty-padding = 0

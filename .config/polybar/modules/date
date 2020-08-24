@@ -1,0 +1,9 @@
+[module/date]
+type = internal/date
+interval = 1
+date = "%a %Y-%m-%d"
+time = %H:%M
+;label = %date%  %time%
+label-foreground = ${colors.fg1}
+;label-foreground = #ffbc8d
+label = "%{A1:"/home/rensenware/.config/scripts/calendar.sh":}%{T5}%{T2} %{T1}%date%  %time%%{T2} %{A}"
