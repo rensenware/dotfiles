@@ -1,71 +1,18 @@
 backend = "glx";
 glx-no-stencil = true;
-glx-copy-from-front = false;
-
 shadow = false;
-# shadow-radius = 5;
-# shadow-offset-x = -5;
-# shadow-offset-y = -5;
-# shadow-opacity = 0.5;
-# shadow-red = 0.0;
-# shadow-green = 0.0;
-# shadow-blue = 0.0;
-# shadow-exclude = [
-#     "! name~=''",
-#     "name = 'Notification'",
-#     "name = 'Plank'",
-#     "name = 'Docky'",
-#     "name = 'Kupfer'",
-#     "name = 'xfce4-notifyd'",
-#     "name = 'cpt_frame_window'",
-#     "name *= 'VLC'",
-#     "name *= 'compton'",
-#     "name *= 'picom'",
-#     "name *= 'Chromium'",
-#     "name *= 'Chrome'",
-#     "class_g = 'Firefox' && argb",
-#     "class_g = 'Conky'",
-#     "class_g = 'Kupfer'",
-#     "class_g = 'Synapse'",
-#     "class_g = 'i3bar'  && argb",
-#     "class_g = 'Polybar' && argb",
-#     "class_g ?= 'Notify-osd'",
-#     "class_g ?= 'Cairo-dock'",
-#     "class_g ?= 'Xfce4-notifyd'",
-#     "class_g ?= 'Xfce4-power-manager'",
-#     "_GTK_FRAME_EXTENTS@:c",
-#     "_NET_WM_STATE@:32a *= '_NET_WM_STATE_HIDDEN'"
-# ];
-# shadow-ignore-shaped = false;
-
+xrender-sync-fence = false;
 inactive-opacity = 1;
 active-opacity = 1;
 frame-opacity = 1;
 inactive-opacity-override = false;
-# inactive-dim = 0.2;
-# inactive-dim-fixed = true;
-# blur-background = true;
-# blur-background-frame = true;
-blur-background-fixed = false;
-blur-background-exclude = [
-    "window_type = 'dock'",
-    "window_type = 'desktop'"
-];
-
-
 fading = false;
-#fade-delta = 3;
-#fade-in-step = 0.04;
-#fade-out-step = 0.04;
-#no-fading-openclose = false;
-# fade-exclude = [ ];
-
 mark-wmwin-focused = true;
 mark-ovredir-focused = true;
 use-ewmh-active-win = true;
-detect-rounded-corners = true;
+detect-rounded-corners = false;
 detect-client-opacity = true;
-refresh-rate = 0;
+refresh-rate = 60;
 vsync = true;
 dbe = false;
 unredir-if-possible = false;
@@ -76,15 +23,9 @@ wintypes:
 {
     tooltip =
     {
-        # fade: Fade the particular type of windows.
-        fade = true;
-        # shadow: Give those windows shadow
+        fade = false;
         shadow = false;
-        # opacity: Default opacity for the type of windows.
-        opacity = 0.85;
-        # focus: Whether to always consider windows of this type focused.
+        opacity = 0.75;
         focus = true;
     };
 };
-
-xrender-sync-fence = true;
