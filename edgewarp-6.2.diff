@@ -1,0 +1,71 @@
+diff --git a/config.def.h b/config.def.h
+index 1c0b587..0002519 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -84,6 +84,10 @@ static Key keys[] = {
+ 	{ MODKEY,                       XK_period, focusmon,       {.i = +1 } },
+ 	{ MODKEY|ShiftMask,             XK_comma,  tagmon,         {.i = -1 } },
+ 	{ MODKEY|ShiftMask,             XK_period, tagmon,         {.i = +1 } },
++  { MODKEY,                       XK_Up,     edgewarp,       {.v = "t"} },
++  { MODKEY,                       XK_Down,   edgewarp,       {.v = "b"} },
++  { MODKEY,                       XK_Left,   edgewarp,       {.v = "l"} },
++  { MODKEY,                       XK_Right,  edgewarp,       {.v = "r"} },
+ 	TAGKEYS(                        XK_1,                      0)
+ 	TAGKEYS(                        XK_2,                      1)
+ 	TAGKEYS(                        XK_3,                      2)
+diff --git a/dwm.c b/dwm.c
+index 664c527..3d860a7 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -183,6 +183,7 @@ static void mappingnotify(XEvent *e);
+ static void maprequest(XEvent *e);
+ static void monocle(Monitor *m);
+ static void motionnotify(XEvent *e);
++static void edgewarp(const Arg *arg);
+ static void movemouse(const Arg *arg);
+ static Client *nexttiled(Client *c);
+ static void pop(Client *);
+@@ -1193,6 +1194,43 @@ movemouse(const Arg *arg)
+ 	}
+ }
+ 
++void
++edgewarp(const Arg *arg) {
++        Client *c;
++        c = selmon->sel;
++        char e;
++        int nx, ny;
++        int offset;
++
++        if(!c || !arg)
++                return;
++        if(selmon->lt[selmon->sellt]->arrange && !c->isfloating)
++                return;
++        if(sscanf((char *)arg->v, "%c", &e) != 1)
++                return;
++
++        nx = c->x;
++        ny = c->y;
++
++        offset = selmon->showbar ? bh : 0;
++
++        if(e == 't') { //top
++                ny = offset;
++        } else if(e == 'b') { //bottom
++                ny = c->h > selmon->mh - 2 * c->bw ? c->h : selmon->mh - c->h - 2 * c->bw;
++        } else if(e == 'l') { //left
++                nx = 0;
++        } else if(e == 'r') { //right
++                nx = c->w > selmon->mw - 2 * c->bw ? c->w : selmon->mw - c->w - 2 * c->bw;
++        } else {
++                return;
++        }
++
++        XRaiseWindow(dpy, c->win);
++        resize(c, nx, ny, c->w, c->h, True);
++        XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, c->w / 2, c->h / 2);
++}
++
+ Client *
+ nexttiled(Client *c)
+ {
