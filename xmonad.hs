@@ -1,25 +1,43 @@
 -- Imports
-import XMonad
-import XMonad.Util.SpawnOnce
-import XMonad.Hooks.InsertPosition
-import XMonad.Actions.UpdatePointer
-import XMonad.Actions.CycleWS
-import XMonad.Layout.WindowArranger
-import XMonad.Layout.ResizableTile
+import XMonad hiding ( (|||) )
 import System.Exit
 import Data.Map as M
 import XMonad.StackSet as W
 import Graphics.X11.ExtraTypes.XF86
 
+import XMonad.Hooks.ManageDocks
+import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.InsertPosition
+
+import XMonad.Util.SpawnOnce
+import XMonad.Util.Run
+import XMonad.Util.Cursor
+
+import XMonad.Actions.UpdatePointer
+import XMonad.Actions.CycleWS
+import XMonad.Actions.SwapWorkspaces
+import XMonad.Actions.Navigation2D
+
+import XMonad.Layout.ResizableTile
+import XMonad.Layout.NoBorders
+import XMonad.Layout.Named
+import XMonad.Layout.LayoutCombinators
+import XMonad.Layout.TwoPanePersistent
+import XMonad.Layout.SimplestFloat
+import XMonad.Layout.Renamed
+import XMonad.Layout.Grid
+import XMonad.Layout.BinarySpacePartition
+import XMonad.Layout.NoFrillsDecoration
 
 -- Keybinds
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
 -- Basic applications
   [ ((modm, xK_Return), spawn $ XMonad.terminal conf)
-  , ((modm, xK_a ), spawn "j4-dmenu-desktop")
+  , ((modm, xK_a ), spawn "j4-dmenu-desktop --dmenu \'dmenu -i -x 265 -z 895 -p Run\'")
   , ((modm .|. shiftMask, xK_a ), spawn "dmenu_run")
   , ((modm .|. controlMask, xK_a), spawn "/home/rensenware/.config/scripts/dmenuconfig.sh")
+  , ((0, xK_Print), spawn "/home/rensenware/.config/scripts/dmenuscreenshot.sh")
 
 -- Session controls
   , ((modm .|. controlMask .|. shiftMask, xK_Delete), io (exitWith ExitSuccess))   
@@ -30,12 +48,11 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
 -- Program launchers
   , ((modm .|. controlMask .|. shiftMask, xK_b), spawn "firefox")
-  , ((modm .|. controlMask .|. shiftMask, xK_d), spawn "discord")
+  , ((modm .|. controlMask .|. shiftMask, xK_d), spawn "lightcord")
   , ((modm .|. controlMask .|. shiftMask, xK_s), spawn "spotify --force-device-scale-factor=1.32")
-  , ((modm .|. controlMask .|. shiftMask, xK_f), spawn "thunar")
+  , ((modm .|. controlMask .|. shiftMask, xK_f), spawn "pcmanfm")
   , ((modm .|. controlMask .|. shiftMask, xK_l), spawn "libreoffice --writer")
   , ((modm .|. controlMask .|. shiftMask, xK_p), spawn "pinta")
-  , ((modm .|. controlMask .|. shiftMask, xK_m), spawn "vlc")
   , ((modm .|. controlMask .|. shiftMask, xK_t), spawn "deluge-gtk")
   , ((modm .|. controlMask .|. shiftMask, xK_x), spawn "ksysguard")
 
@@ -44,7 +61,8 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
   , ((0, xF86XK_Bluetooth), spawn "/home/rensenware/.config/scripts/dwmbluetooth.sh")
   , ((0, xF86XK_WLAN), spawn "/home/rensenware/.config/scripts/dwmwlan.sh")
   , ((0, xF86XK_Display), spawn "/home/rensenware/.config/scripts/dmenudisplay.sh none")
-  , ((modm, xF86XK_Display), spawn "arandr")
+  , ((modm, xF86XK_Display), spawn "/home/rensenware/.config/scripts/screentoggle.sh")
+  , ((modm .|. shiftMask, xF86XK_Display), spawn "arandr")
 
 -- Spotify controls
   , ((modm, xK_Up), spawn "playerctl -p spotify play-pause")
@@ -58,6 +76,18 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 -- Toggle floating
   , ((modm, xK_space ), withFocused $ windows . W.sink)
 
+-- "Fullscreening"
+  , ((modm, xK_d), sendMessage ToggleStruts)
+
+-- Layouts
+  , ((modm, xK_i), sendMessage $ JumpToLayout "[⊢]")
+  , ((modm, xK_o), sendMessage $ JumpToLayout "[•]")
+  , ((modm, xK_p), sendMessage $ JumpToLayout "[ ]")
+  , ((modm .|. shiftMask, xK_o), sendMessage $ JumpToLayout "[|]")
+  , ((modm .|. shiftMask, xK_i), sendMessage $ JumpToLayout "[⊤]")
+  , ((modm .|. controlMask, xK_i), sendMessage $ JumpToLayout "[#]")
+  , ((modm .|. controlMask, xK_o), sendMessage $ JumpToLayout "[@]")
+
 -- Focusing
   , ((modm, xK_j), windows W.focusDown)
   , ((modm, xK_k), windows W.focusUp)
@@ -67,6 +97,12 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
   , ((modm .|. shiftMask, xK_j), windows W.swapDown)
   , ((modm .|. shiftMask, xK_k), windows W.swapUp)
   , ((modm .|. shiftMask, xK_Return), windows W.swapMaster)
+  
+-- Positional navigation
+  , ((modm, xK_m), windowGo D False)
+  , ((modm, xK_comma), windowGo U False)
+  , ((modm, xK_period), windowGo R False)
+  , ((modm, xK_n), windowGo L False)
 
 -- Resizing
   , ((modm, xK_t), sendMessage Shrink)
@@ -74,26 +110,19 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
   , ((modm .|. shiftMask, xK_t), sendMessage MirrorShrink)
   , ((modm .|. shiftMask, xK_y), sendMessage MirrorExpand)
 
--- Floating window control
-  , ((modm, xK_m), sendMessage (MoveDown 27))
-  , ((modm, xK_comma), sendMessage (MoveUp 27))
-  , ((modm, xK_n), sendMessage (MoveLeft 48))
-  , ((modm, xK_period), sendMessage (MoveRight 48))
-  , ((modm .|. shiftMask, xK_m), sendMessage (IncreaseDown 27))
-  , ((modm .|. shiftMask, xK_comma), sendMessage (DecreaseDown 27))
-  , ((modm .|. shiftMask, xK_n), sendMessage (DecreaseRight 48))
-  , ((modm .|. shiftMask, xK_period), sendMessage (IncreaseUp 48))
-
 -- Increase number of windows in master area
   , ((modm, xK_minus), sendMessage (IncMasterN (-1)))
   , ((modm, xK_equal), sendMessage (IncMasterN 1))
 
 -- Audio controls
   , ((0, xF86XK_AudioMute), spawn "/home/rensenware/.config/scripts/volume.sh --toggle")
-  , ((0 ,xF86XK_AudioLowerVolume), spawn "/home/rensenware/.config/scripts/volume.sh --down")
+  , ((0, xF86XK_AudioLowerVolume), spawn "/home/rensenware/.config/scripts/volume.sh --down")
   , ((0, xF86XK_AudioRaiseVolume), spawn "/home/rensenware/.config/scripts/volume.sh --up")
   , ((0, xF86XK_AudioMicMute), spawn "/home/rensenware/.config/scripts/volume.sh --mic")
 
+-- Brightness controls
+  , ((0, xF86XK_MonBrightnessUp), spawn "/home/rensenware/.config/scripts/changebrightness.sh up")
+  , ((0, xF86XK_MonBrightnessDown), spawn "/home/rensenware/.config/scripts/changebrightness.sh down")
 -- Workspace switching
   , ((modm, xK_Tab), nextWS)
   , ((modm, xK_grave), prevWS)
@@ -102,45 +131,58 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
   [((m .|. modm, k), windows $ f i)
     | (i, k) <- zip (XMonad.workspaces conf) [xK_1 .. xK_9]
     , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)]]
-
+  ++
+  [((mod1Mask, k), windows $ swapWithCurrent i)
+    | (i, k) <- zip (XMonad.workspaces conf) [xK_1 .. xK_9]]
 
 -- Autostart
 myStartupHook = do
-  spawnOnce "xsetroot -cursor_name left_ptr &"
-  spawnOnce "xrandr --output \"eDP1\" --auto && xrandr --output \"HDMI2\" --off &"
+  spawnOnce "xrandr --output eDP1 -s 1920x1080 && xrandr --output HDMI2 --off &"
   spawnOnce "picom --config /home/rensenware/.config/picom/config --experimental-backends &"
   spawnOnce "/home/rensenware/.fehbg &"
   spawnOnce "dunst &"
-  spawnOnce "xset r rate 300 50 &"
-  spawnOnce "/usr/lib/xfce-polkit/xfce-polkit &"
+  spawnOnce "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &"
   spawnOnce "kglobalaccel5 &"
-
+  spawnOnce "xset r rate 300 50 &"
 
 -- Layouts
-myLayoutHook = tiled ||| Full
-  where
-    tiled = ResizableTall nmaster delta ratio [5/4]
-    nmaster = 1
-    delta = 5/100
-    ratio = 1/2
-
+myLayoutHook = avoidStruts $ smartBorders $                                          (
+   renamed [Replace "[⊢]"] $ ResizableTall 1 (5/100) (1/2) [5/4]               ) ||| (
+   renamed [Replace "[⊤]"] $ Mirror $ ResizableTall 1 (5/100) (1/2) [5/4]      ) ||| (
+   renamed [Replace "[•]"] $ Full                                              ) ||| (
+   renamed [Replace "[|]"] $ TwoPanePersistent Nothing (5/100) (1/2)           ) ||| (
+   renamed [Replace "[ ]"] $ simplestFloat                                     ) ||| (
+   renamed [Replace "[#]"] $ Grid                                              ) ||| (
+   renamed [Replace "[@]"] $ emptyBSP                                          )
 
 -- Window Management
 myManageHook = composeAll
   [ className =? "Pavucontrol" --> doFloat ]
 
-
--- Main configuration
-main = xmonad def
-  --{ terminal    = "sh -c 'SHELL=/bin/zsh st'"
-  { terminal    = "SHELL=/bin/zsh st"
-  , modMask     = mod4Mask
-  , borderWidth = 2
-  , XMonad.keys = myKeys
-  , startupHook = myStartupHook
-  , manageHook = insertPosition End Newer <+> myManageHook
-  , logHook = updatePointer (0.5, 0.5) (0, 0)
-  , layoutHook = windowArrange myLayoutHook
-  , normalBorderColor = "#444444"
-  , focusedBorderColor = "#3f51b5"
-  }
+-- Config
+main = do
+  xmproc <- spawnPipe "xmobar -x 0 /home/rensenware/.config/xmobar/xmobar.config"
+  xmonad $ withNavigation2DConfig def $ docks def
+    { terminal = "st"
+    , modMask = mod4Mask 
+    , borderWidth = 2
+    , XMonad.keys = myKeys
+    , startupHook = setDefaultCursor xC_left_ptr <+> myStartupHook
+    , manageHook = insertPosition End Newer <+> myManageHook
+    , logHook = updatePointer (0.5, 0.5) (0, 0) <+> dynamicLogWithPP xmobarPP
+      { ppCurrent = xmobarColor "#f8f8f8" "#44475a" . wrap " " " "
+      , ppOutput = \x -> hPutStrLn xmproc x
+      , ppHidden = xmobarColor "#82AAFF" "#1e1f29" . wrap " " " "
+      , ppHiddenNoWindows = xmobarColor "#dedede" "#1e1f29" . wrap " " " "
+      , ppVisible = xmobarColor "#6d27ef" "#44475a" . wrap " " " "
+      , ppWsSep = ""
+      , ppSep = " "
+      , ppOrder = \(ws:l:_) -> [ws,l] }
+    , layoutHook =  noFrillsDeco shrinkText (def 
+      { fontName = "xft:Iosevka:size=9:antialias=true:autohint=false:hintstyle=hintslight"
+      , activeColor = "#6e5991"
+      , activeBorderWidth = 0 }) 
+      $ myLayoutHook
+    , normalBorderColor = "#363949"
+    , focusedBorderColor = "#6e5991" 
+    }
