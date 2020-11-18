@@ -1,0 +1,31 @@
+attachbelow
+autostart
+bar height
+bottomstack (cfacts)
+center
+centeredmaster (cfacts)
+cfacts
+deck (cfacts)
+decoration hints
+scratchpad (Gaspar Vardanyan)
+gaplessgrid
+keycodes
+moveresize 
+edgewarp (rensenware)
+nextprev (shiftview.c)
+nodmenu
+notitle
+pertag (pertag-perseltag)
+stacker
+statusallmons
+sticky
+swallow
+swaptags
+unfloatvisible
+warp
+zoomswap
+fullscreen-compilation
+noborder (fullscreen-compilation)
+tagswapmon (fullscreen-compilation)
+resizepoint
+windowrolerule
