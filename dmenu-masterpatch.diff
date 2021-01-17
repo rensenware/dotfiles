@@ -1,0 +1,148 @@
+diff --git a/Makefile b/Makefile
+index a03a95c..0032546 100644
+--- a/Makefile
++++ b/Makefile
+@@ -17,10 +17,7 @@ options:
+ .c.o:
+ 	$(CC) -c $(CFLAGS) $<
+ 
+-config.h:
+-	cp config.def.h $@
+-
+-$(OBJ): arg.h config.h config.mk drw.h
++$(OBJ): arg.h config.def.h config.mk drw.h
+ 
+ dmenu: dmenu.o drw.o util.o
+ 	$(CC) -o $@ dmenu.o drw.o util.o $(LDFLAGS)
+diff --git a/config.def.h b/config.def.h
+index 1edb647..41e0851 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -1,23 +1,28 @@
+-/* See LICENSE file for copyright and license details. */
+-/* Default settings; can be overriden by command line. */
++// Screen edge
++static int topbar = 1;
+ 
+-static int topbar = 1;                      /* -b  option; if 0, dmenu appears at bottom     */
+-/* -fn option overrides fonts[0]; default X11 font or font set */
++// Font
+ static const char *fonts[] = {
+-	"monospace:size=10"
++	"Noto Sans:size=12:antialias=true:hinting=true:autohint=false:hintstyle=hintslight:embeddedbitmap=false",
+ };
+-static const char *prompt      = NULL;      /* -p  option; prompt to the left of input field */
++
++// Default prompt title
++static const char *prompt = NULL;
++
++// Colorscheme
+ static const char *colors[SchemeLast][2] = {
+-	/*     fg         bg       */
+-	[SchemeNorm] = { "#bbbbbb", "#222222" },
+-	[SchemeSel] = { "#eeeeee", "#005577" },
+-	[SchemeOut] = { "#000000", "#00ffff" },
++// Scheme           FG         BG 
++	[SchemeNorm] = { "#dedede", "#1e1f29" },
++	[SchemeSel]  = { "#f8f8f2", "#44475a" },
++	[SchemeOut]  = { "#dedede", "#1e1f29" },
+ };
+-/* -l option; if nonzero, dmenu uses vertical list with given number of lines */
+-static unsigned int lines      = 0;
+ 
+-/*
+- * Characters not considered part of a word while deleting words
+- * for example: " /?\"&[]"
+- */
++// Default number of lines
++static unsigned int lines = 0;
++
++// Line height
++static unsigned int lineheight = 22;
++static unsigned int min_lineheight = 8;
++
++// Word delimiters
+ static const char worddelimiters[] = " ";
+diff --git a/dmenu.1 b/dmenu.1
+index 323f93c..f2a82b4 100644
+--- a/dmenu.1
++++ b/dmenu.1
+@@ -6,6 +6,8 @@ dmenu \- dynamic menu
+ .RB [ \-bfiv ]
+ .RB [ \-l
+ .IR lines ]
++.RB [ \-h
++.IR height ]
+ .RB [ \-m
+ .IR monitor ]
+ .RB [ \-p
+@@ -50,6 +52,9 @@ dmenu matches menu items case insensitively.
+ .BI \-l " lines"
+ dmenu lists items vertically, with the given number of lines.
+ .TP
++.BI \-h " height"
++dmenu uses a menu line of at least 'height' pixels tall, but no less than 8.
++.TP
+ .BI \-m " monitor"
+ dmenu is displayed on the monitor number supplied. Monitor numbers are starting
+ from 0.
+diff --git a/dmenu.c b/dmenu.c
+index 65f25ce..b20c8bc 100644
+--- a/dmenu.c
++++ b/dmenu.c
+@@ -53,7 +53,7 @@ static XIC xic;
+ static Drw *drw;
+ static Clr *scheme[SchemeLast];
+ 
+-#include "config.h"
++#include "config.def.h"
+ 
+ static int (*fstrncmp)(const char *, const char *, size_t) = strncmp;
+ static char *(*fstrstr)(const char *, const char *) = strstr;
+@@ -131,7 +131,7 @@ drawmenu(void)
+ {
+ 	unsigned int curpos;
+ 	struct item *item;
+-	int x = 0, y = 0, w;
++	int x = 0, y = 0, fh = drw->fonts->h, w;
+ 
+ 	drw_setscheme(drw, scheme[SchemeNorm]);
+ 	drw_rect(drw, 0, 0, mw, mh, 1, 1);
+@@ -148,7 +148,7 @@ drawmenu(void)
+ 	curpos = TEXTW(text) - TEXTW(&text[cursor]);
+ 	if ((curpos += lrpad / 2 - 1) < w) {
+ 		drw_setscheme(drw, scheme[SchemeNorm]);
+-		drw_rect(drw, x + curpos, 2, 2, bh - 4, 1, 0);
++		drw_rect(drw, x + curpos, 2 + (bh - fh) / 2, 2, fh - 4, 1, 0);
+ 	}
+ 
+ 	if (lines > 0) {
+@@ -608,7 +608,7 @@ setup(void)
+ 	utf8 = XInternAtom(dpy, "UTF8_STRING", False);
+ 
+ 	/* calculate menu geometry */
+-	bh = drw->fonts->h + 2;
++	bh = lineheight;
+ 	lines = MAX(lines, 0);
+ 	mh = (lines + 1) * bh;
+ #ifdef XINERAMA
+@@ -689,7 +689,7 @@ setup(void)
+ static void
+ usage(void)
+ {
+-	fputs("usage: dmenu [-bfiv] [-l lines] [-p prompt] [-fn font] [-m monitor]\n"
++	fputs("usage: dmenu [-bfiv] [-l lines] [-h height] [-p prompt] [-fn font] [-m monitor]\n"
+ 	      "             [-nb color] [-nf color] [-sb color] [-sf color] [-w windowid]\n", stderr);
+ 	exit(1);
+ }
+@@ -717,6 +717,10 @@ main(int argc, char *argv[])
+ 		/* these options take one argument */
+ 		else if (!strcmp(argv[i], "-l"))   /* number of lines in vertical list */
+ 			lines = atoi(argv[++i]);
++		else if (!strcmp(argv[i], "-h")) { /* minimum height of one menu line */
++			lineheight = atoi(argv[++i]);
++			lineheight = MAX(lineheight, min_lineheight);
++		}
+ 		else if (!strcmp(argv[i], "-m"))
+ 			mon = atoi(argv[++i]);
+ 		else if (!strcmp(argv[i], "-p"))   /* adds prompt to left of input field */
