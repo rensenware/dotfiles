@@ -1,0 +1,161 @@
+diff --git a/Makefile b/Makefile
+index ef43ef4..1ee5ad9 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,11 +2,8 @@ PREFIX ?= /usr/local
+ CC ?= cc
+ LDFLAGS = -lX11
+ 
+-output: dwmblocks.c blocks.def.h blocks.h
++output: dwmblocks.c blocks.def.h blocks.def.h
+ 	${CC}  dwmblocks.c $(LDFLAGS) -o dwmblocks
+-blocks.h:
+-	cp blocks.def.h $@
+-
+ 
+ clean:
+ 	rm -f *.o *.gch dwmblocks
+diff --git a/blocks.def.h b/blocks.def.h
+index 9c22d68..687887d 100644
+--- a/blocks.def.h
++++ b/blocks.def.h
+@@ -1,11 +1,9 @@
+-//Modify this file to change what commands output to your statusbar, and recompile using the make command.
+ static const Block blocks[] = {
+-	/*Icon*/	/*Command*/		/*Update Interval*/	/*Update Signal*/
+-	{"Mem:", "free -h | awk '/^Mem/ { print $3\"/\"$2 }' | sed s/i//g",	30,		0},
+-
+-	{"", "date '+%b %d (%a) %I:%M%p'",					5,		0},
++  { "󰥻  ", "setxkbmap -query | sed -r -e '3!d' -e 's,.{12},,' -e 's,.{4}$,,'", 0,  1 },
++  { "",     "/home/rensenware/.config/blocks/scripts/volume.sh",               4,  4 },
++  { "",     "/home/rensenware/.config/blocks/scripts/mic.sh",                  4,  3 },
++  { "",     "/home/rensenware/.config/blocks/scripts/battery.sh",              30, 2 },
++  { "󰅐  ",  "date +'%Y-%m-%d  %H:%M'",                                      1,  0 },
+ };
+-
+-//sets delimeter between status commands. NULL character ('\0') means no delimeter.
+-static char delim[] = " | ";
++static char delim[] = "     ";
+ static unsigned int delimLen = 5;
+diff --git a/dwmblocks.c b/dwmblocks.c
+index ded717c..d317d3b 100644
+--- a/dwmblocks.c
++++ b/dwmblocks.c
+@@ -48,7 +48,7 @@ static void (*writestatus) () = pstdout;
+ #endif
+ 
+ 
+-#include "blocks.h"
++#include "blocks.def.h"
+ 
+ static char statusbar[LENGTH(blocks)][CMDLENGTH] = {0};
+ static char statusstr[2][STATUSLENGTH];
+diff --git a/scripts/battery.sh b/scripts/battery.sh
+new file mode 100755
+index 0000000..06f1965
+--- /dev/null
++++ b/scripts/battery.sh
+@@ -0,0 +1,48 @@
++#!/bin/dash
++
++powerpath="/sys/class/power_supply"
++ac=$(cat "$powerpath/AC/online")
++bat0lvl=$(cat "$powerpath/BAT0/energy_now")
++bat0max=$(cat "$powerpath/BAT0/energy_full")
++bat1lvl=$(cat "$powerpath/BAT1/energy_now")
++bat1max=$(cat "$powerpath/BAT1/energy_full")
++
++bat="$(echo "scale=0; ""$(echo "scale=0; ""$(($bat0lvl+$bat1lvl))""*100" | bc)""/""$(($bat0max+$bat1max))" | bc)"
++
++if [ "$ac" = 1 ]; then
++        if [ "$bat" -gt 85 ]; then
++                printf "󰂅  $bat%%"
++        elif [ "$bat" -gt 70 ]; then
++                printf "󰂋  $bat%%"
++        elif [ "$bat" -gt 55 ]; then
++                printf "󰂉  $bat%%"
++        elif [ "$bat" -gt 40 ]; then
++                printf "󰂈  $bat%%"
++        elif [ "$bat" -gt 25 ]; then
++                printf "󰂇  $bat%%"
++        elif [ "$bat" -lt 26 ]; then
++                printf "󰂆  $bat%%"
++        elif [ "$bat" -lt 10 ]; then
++                printf "󰂆  0$bat%%"
++        fi
++else
++        if [ "$bat" -gt 85 ]; then
++                printf "󰁹 $bat%%"
++        elif [ "$bat" -gt 70 ]; then
++                printf "󰂂 $bat%%"
++        elif [ "$bat" -gt 55 ]; then
++                printf "󰂀 $bat%%"
++        elif [ "$bat" -gt 40 ]; then
++                printf "󰁽 $bat%%"
++        elif [ "$bat" -gt 25 ]; then
++                printf "󰁼 $bat%%"
++        elif [ "$bat" -gt 10 ]; then
++                printf "󰁻 $bat%%"
++        elif [ "$bat" -eq 10 ]; then
++                printf "󰁻 $bat%%"
++                dunstify -a "warnBattery" -i /usr/share/icons/Papirus-Dark/48x48/status/battery-empty.svg -r "996065" "Battery dangerously low!"
++        elif [ "$bat" -lt 10 ]; then
++                printf "󰁻 0$bat%%"
++                dunstify -a "warnBattery" -i /usr/share/icons/Papirus-Dark/48x48/status/battery-empty.svg -r "996065" "Battery dangerously low!"
++        fi
++fi
+diff --git a/scripts/mic.sh b/scripts/mic.sh
+new file mode 100755
+index 0000000..e340335
+--- /dev/null
++++ b/scripts/mic.sh
+@@ -0,0 +1,20 @@
++#!/bin/dash
++
++mutestatus=$(pamixer --get-mute --default-source)
++volume=$(pamixer --get-volume --default-source)
++
++if [ "$mutestatus" = "false" ]; then
++        if [ "$volume" -gt 50 ]; then
++                printf "󰍬 $volume%%"
++        elif [ "$volume" -gt 9 ]; then
++                printf "󰍮 $volume%%"
++        else
++                printf "󰍮 0$volume%%"
++        fi
++else
++        if [ "$volume" -lt 10 ]; then
++                printf "󰍭 0$volume%%"
++        else
++                printf "󰍭 $volume%%"
++        fi
++fi
+diff --git a/scripts/volume.sh b/scripts/volume.sh
+new file mode 100755
+index 0000000..c2e2bdc
+--- /dev/null
++++ b/scripts/volume.sh
+@@ -0,0 +1,23 @@
++#!/bin/dash
++
++mutestatus=$(pamixer --get-mute)
++volume=$(pamixer --get-volume)
++
++if [ "$mutestatus" = "false" ]; then
++        if [ "$volume" -gt 66 ]; then
++                printf "󰕾 $volume%%"
++        elif [ "$volume" -gt 33 ]; then
++                printf "󰖀 $volume%%"
++        elif [ "$volume" -gt 9 ]; then
++                printf "󰕿 $volume%%"
++        else
++                printf "󰕿 0$volume%%"
++        fi
++                
++else
++        if [ "$volume" -lt 10 ]; then
++                printf "󰖁 0$volume%%"
++        else
++                printf "󰖁 $volume%%"
++        fi
++fi
